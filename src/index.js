@@ -5,7 +5,7 @@ import { generateSecureRandom } from 'react-native-securerandom';
 
 const { RNGoogleSafetyNet } = NativeModules;
 const base64js = require('base64-js');
-const jws = require('jwt-decode');
+const jwtDecode = require('jwt-decode');
 
 /**
  * Checks if Google Play Services is available and up to date
@@ -38,7 +38,7 @@ function generateNonce(length) {
  */
 function sendAttestationRequest(nonce, apiKey) {
   return RNGoogleSafetyNet.sendAttestationRequest(nonce, apiKey).then((result) => {
-    const decodedResult = jws.decode(result);
+    const decodedResult = jwtDecode(result);
     return decodedResult;
   });
 }
@@ -56,8 +56,7 @@ function sendAttestationRequest(nonce, apiKey) {
  * @return {Promise}
  */
 function verifyAttestationResponse(originalNonce, response) {
-  const decodedResponse = JSON.parse(response.payload);
-  if (originalNonce === decodedResponse.nonce && decodedResponse.ctsProfileMatch && decodedResponse.basicIntegrity) {
+  if (originalNonce === response.nonce && response.ctsProfileMatch && response.basicIntegrity) {
     return Promise.resolve(false);
   }
   return Promise.resolve(true);
